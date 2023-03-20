@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.5.0 <0.9.0;
 
-import 'HederaResponseCodes.sol';
-import 'IHederaTokenService.sol';
-import 'HederaTokenService.sol';
-import 'ExpiryHelper.sol';
-import 'KeyHelper.sol';
+import "./HederaResponseCodes.sol";
+import "./IHederaTokenService.sol";
+import "./HederaTokenService.sol";
+import "./ExpiryHelper.sol";
+import "./KeyHelper.sol";
 
 contract NFTCreator is ExpiryHelper, KeyHelper, HederaTokenService {
 
@@ -18,7 +18,7 @@ contract NFTCreator is ExpiryHelper, KeyHelper, HederaTokenService {
         ) external payable returns (address){
 
         IHederaTokenService.TokenKey[] memory keys = new IHederaTokenService.TokenKey[](1);
-        // Set this contract as supply
+        // Set this contract as supply for the token
         keys[0] = getSingleKey(KeyType.SUPPLY, KeyValueType.CONTRACT_ID, address(this));
 
         IHederaTokenService.HederaToken memory token;
@@ -30,12 +30,12 @@ contract NFTCreator is ExpiryHelper, KeyHelper, HederaTokenService {
         token.maxSupply = maxSupply;
         token.tokenKeys = keys;
         token.freezeDefault = false;
-        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod); // Contract automatically renew by himself
+        token.expiry = createAutoRenewExpiry(address(this), autoRenewPeriod); // Contract auto-renews the token
 
         (int responseCode, address createdToken) = HederaTokenService.createNonFungibleToken(token);
 
         if(responseCode != HederaResponseCodes.SUCCESS){
-            //revert("Failed to create non-fungible token");
+            revert("Failed to create non-fungible token");
         }
         return createdToken;
     }
